@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -14,49 +15,59 @@ namespace ConfigurationsTask.Controllers
     public class BrandsController : ControllerBase
     {
         private readonly ConfugurationDbContext _context;
-        public BrandsController(ConfugurationDbContext context)
+        private readonly IMapper _mapper;
+        public BrandsController(ConfugurationDbContext context, IMapper mapper)
         {
             this._context = context;
+            this._mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllBrands()
+        public async Task<ActionResult<List<GetBrandDto>>> GetAllBrands()
         {
-           return Ok(await _context.Brands.ToListAsync());
+            var brands = await _context.Brands.ToListAsync();
+            return Ok(_mapper.Map<List<GetBrandDto>>(brands));
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> GetById(int id)
         {
-            return Ok(await _context.Brands.SingleOrDefaultAsync(x => x.Id == id));
+            var brand = await _context.Brands.FirstOrDefaultAsync(x => x.Id == id);
+            if (brand == null)
+                return NotFound();
+
+            return Ok(_mapper.Map<GetBrandDto>(brand));
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateBrand(CreateBrandDto brandDto)
         {
-            Brand brand = new Brand()
-            {
-                Name = brandDto.Name
-            };
-            await _context.Brands.AddAsync(brand);
+          
+            await _context.Brands.AddAsync(_mapper.Map<Brand>(brandDto));
             await _context.SaveChangesAsync();
             return Ok();
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateBrand(int id,UpdateBrandDto brandDto)
+        public async Task<IActionResult> UpdateBrand(int id, UpdateBrandDto update)
         {
-            var updated = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
-            updated.Name = brandDto.Name;
-            _context.Brands.Update(updated);
+            var brand = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
+            if (brand == null)
+                return NotFound();
+
+            _mapper.Map(update, brand); 
             await _context.SaveChangesAsync();
+
             return Ok();
         }
+
 
         [HttpDelete]
         public async Task<IActionResult> DeleteBrand(int id)
         {
             var deleted = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
-            _context.Brands.Remove(deleted);
+            if (deleted == null)
+                return NotFound();
+                _context.Brands.Remove(deleted);
             await _context.SaveChangesAsync();
             return Ok();
         }

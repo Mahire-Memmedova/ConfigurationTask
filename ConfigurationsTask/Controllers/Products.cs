@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -13,32 +14,39 @@ namespace ConfigurationsTask.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly ConfugurationDbContext _context;
-        public ProductsController(ConfugurationDbContext context)
+        private readonly IMapper _mapper;
+        public ProductsController(ConfugurationDbContext context, IMapper mapper)
         {
-            _context = context;
+            this._context = context;
+            this._mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllProducts()
+        public async Task<ActionResult<GetProductDto>> GetAllProducts()
         {
-            return Ok(await _context.Products.ToListAsync());
+            var products = await _context.Products.Include(p=>p.Brand).Select(p=>new GetProductDto()
+            {
+                BrandName =  p.Brand.Name,
+                Desc = p.Desc,
+                Price = p.Price,
+                Name =  p.Name,
+                BrandId =  p.BrandId
+            }).ToListAsync();
+            return Ok(products);
         }
         
         [HttpGet]
         public async Task<IActionResult> GetById(int id)
         {
-            return Ok(await _context.Products.FirstOrDefaultAsync(p => p.Id == id));
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null)
+                return NotFound();
+            return Ok(_mapper.Map<GetProductDto>(product));
         }
         
         [HttpPost]
         public async Task<IActionResult> CreateProduct(CreateProductDto productDto)
         {
-            Product product = new Product()
-            {
-                Name = productDto.Name,
-                Desc = productDto.Desc,
-                Price = productDto.Price,
-                BrandId =  productDto.BrandId,
-            };
+            var product = _mapper.Map<Product>(productDto);
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
             return Ok();
@@ -54,17 +62,18 @@ namespace ConfigurationsTask.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateProduct(int id,UpdateProductDto dto)
+        public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto dto)
         {
-            var updated = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
-            updated.Name = dto.Name;
-            updated.Desc = dto.Desc;
-            updated.Price = dto.Price;
-            updated.BrandId = dto.BrandId;
-            _context.Products.Update(updated);
-            await  _context.SaveChangesAsync();
-            return Ok();
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null)
+                return NotFound();
+
+            _mapper.Map(dto, product);  
+            await _context.SaveChangesAsync();
+
+            return Ok(product);
         }
+
     }
 }
 
