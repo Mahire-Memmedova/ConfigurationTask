@@ -1,5 +1,7 @@
 using AutoMapper;
 using ConfigurationsTask.Entities;
+using ConfigurationsTask.Entities.Auth;
+using ConfigurationsTask.Entities.Dtos.Auth;
 using ConfigurationsTask.Entities.Dtos.Brands;
 using ConfigurationsTask.Entities.Dtos.Products;
 
@@ -17,5 +19,7 @@ public class MappingProfile:Profile
         CreateMap<Product, GetProductDto>();
        CreateMap<CreateProductDto, Product>();
        CreateMap<UpdateProductDto, Product>();
+       
+       CreateMap<RegisterDto, AppUser>().ReverseMap();
     }
 }
