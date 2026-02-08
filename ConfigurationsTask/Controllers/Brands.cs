@@ -7,6 +7,7 @@ using ConfigurationsTask.DAL;
 using ConfigurationsTask.Entities;
 using ConfigurationsTask.Entities.Dtos.Brands;
 using ConfigurationsTask.Entities.Dtos.Products;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ConfigurationsTask.Controllers
 {
@@ -48,6 +49,7 @@ namespace ConfigurationsTask.Controllers
         }
 
         [HttpPut]
+        [Authorize("user")]
         public async Task<IActionResult> UpdateBrand(int id, UpdateBrandDto update)
         {
             var brand = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
