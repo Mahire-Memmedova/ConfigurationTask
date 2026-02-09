@@ -1,6 +1,8 @@
 using System.Reflection;
 using System.Text;
 using ConfigurationsTask.DAL;
+using ConfigurationsTask.DAL.Repositories.Abstract;
+using ConfigurationsTask.DAL.Repositories.Concrete.Entityframework;
 using ConfigurationsTask.Entities.Auth;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -15,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddScoped<IBrandRepository,EfBrandRepository>();
 builder.Services.AddFluentValidationAutoValidation()
     .AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());

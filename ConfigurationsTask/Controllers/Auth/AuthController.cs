@@ -11,7 +11,7 @@ using TokenOptions = Microsoft.AspNetCore.Identity.TokenOptions;
 
 namespace ConfigurationsTask.Controllers.Auth;
 [ApiController]
-[Route("api/[controller],[action]")]
+[Route("api/[controller]/[action]")]
 
 public class AuthController:ControllerBase
 {

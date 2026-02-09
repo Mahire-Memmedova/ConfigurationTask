@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ConfigurationsTask.DAL;
+using ConfigurationsTask.DAL.Repositories.Abstract;
 using ConfigurationsTask.Entities;
 using ConfigurationsTask.Entities.Dtos.Brands;
 using ConfigurationsTask.Entities.Dtos.Products;
@@ -15,63 +16,50 @@ namespace ConfigurationsTask.Controllers
     [ApiController]
     public class BrandsController : ControllerBase
     {
-        private readonly ConfugurationDbContext _context;
-        private readonly IMapper _mapper;
-        public BrandsController(ConfugurationDbContext context, IMapper mapper)
+        private readonly IBrandRepository _repo;
+       private readonly IMapper _mapper;
+       
+       public BrandsController(IBrandRepository repo, IMapper mapper)
         {
-            this._context = context;
-            this._mapper = mapper;
+            _repo = repo;
+            _mapper = mapper;
         }
-        [HttpGet]
-        public async Task<ActionResult<List<GetBrandDto>>> GetAllBrands()
-        {
-            var brands = await _context.Brands.ToListAsync();
-            return Ok(_mapper.Map<List<GetBrandDto>>(brands));
-        }
-        
-        [HttpGet]
-        public async Task<IActionResult> GetById(int id)
-        {
-            var brand = await _context.Brands.FirstOrDefaultAsync(x => x.Id == id);
-            if (brand == null)
-                return NotFound();
 
-            return Ok(_mapper.Map<GetBrandDto>(brand));
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            return Ok(await _repo.GetBrandsAsync());
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetBrandById(int? id)
+        {
+            return Ok(await _repo.GetBrandAsync(b=>b.Id == id));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBrand(CreateBrandDto brandDto)
+        public async Task<IActionResult> CreateBrand(CreateBrandDto create)
         {
-          
-            await _context.Brands.AddAsync(_mapper.Map<Brand>(brandDto));
-            await _context.SaveChangesAsync();
-            return Ok();
+            var brand = _mapper.Map<Brand>(create);
+            await _repo.AddAsync(brand);
+            return Ok(brand);
         }
-
-        [HttpPut]
-        [Authorize("user")]
-        public async Task<IActionResult> UpdateBrand(int id, UpdateBrandDto update)
-        {
-            var brand = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
-            if (brand == null)
-                return NotFound();
-
-            _mapper.Map(update, brand); 
-            await _context.SaveChangesAsync();
-
-            return Ok();
-        }
-
 
         [HttpDelete]
         public async Task<IActionResult> DeleteBrand(int id)
         {
-            var deleted = await _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
-            if (deleted == null)
-                return NotFound();
-                _context.Brands.Remove(deleted);
-            await _context.SaveChangesAsync();
-            return Ok();
+            var deleted =await _repo.GetBrandAsync(b=>b.Id == id);
+            _repo.Remove(deleted);
+            await _repo.SaveAsync();
+            return Ok(deleted);
+        }
+        [HttpPut]
+        public async Task<IActionResult> UpdateBrand(int id,UpdateBrandDto update)
+        {
+            var uptaded =await _repo.GetBrandAsync(b=>b.Id == id);
+            _mapper.Map(update,uptaded);
+            await _repo.SaveAsync();
+            return Ok(uptaded);
         }
     }
 }
