@@ -28,27 +28,34 @@ namespace ConfigurationsTask.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            return Ok(await _repo.GetBrandsAsync());
+            return Ok(await _repo.GetAllAsync());
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetBrandById(int? id)
+        public async Task<IActionResult> GetBrandById(int id)
         {
-            return Ok(await _repo.GetBrandAsync(b=>b.Id == id));
+            return Ok(await _repo.GetAsync(b=>b.Id == id));
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAllPaginated(int page, int size)
+        {
+            return Ok(await _repo.GetAllPaginateAsync(page, size));
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> CreateBrand(CreateBrandDto create)
         {
             var brand = _mapper.Map<Brand>(create);
             await _repo.AddAsync(brand);
+            await _repo.SaveAsync();
             return Ok(brand);
         }
 
         [HttpDelete]
         public async Task<IActionResult> DeleteBrand(int id)
         {
-            var deleted =await _repo.GetBrandAsync(b=>b.Id == id);
+            var deleted =await _repo.GetAsync(b=>b.Id == id);
             _repo.Remove(deleted);
             await _repo.SaveAsync();
             return Ok(deleted);
@@ -56,7 +63,7 @@ namespace ConfigurationsTask.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateBrand(int id,UpdateBrandDto update)
         {
-            var uptaded =await _repo.GetBrandAsync(b=>b.Id == id);
+            var uptaded =await _repo.GetAsync(b=>b.Id == id);
             _mapper.Map(update,uptaded);
             await _repo.SaveAsync();
             return Ok(uptaded);

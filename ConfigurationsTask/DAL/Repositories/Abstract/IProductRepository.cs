@@ -1,11 +1,10 @@
+using ConfigurationsTask.Entities;
 using System.Linq.Expressions;
 using ConfigurationsTask.Core.DAL.Repositories.Abstract;
-using ConfigurationsTask.Entities;
-using ConfigurationsTask.Entities.Dtos.Brands;
 
 namespace ConfigurationsTask.DAL.Repositories.Abstract;
 
-public interface IBrandRepository:IBaseRepository<Brand>
+public partial interface IProductRepository:IBaseRepository<Product>
 {
- 
+    
 }

@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConfigurationsTask.DAL.Repositories.Concrete.Entityframework;
 
-public class EfBrandRepository: EfBaseRepository<Brand,ConfugurationDbContext>,IBrandRepository
+public class EfProductRepository:EfBaseRepository<Product,ConfugurationDbContext>,IProductRepository
 {
-    public EfBrandRepository(ConfugurationDbContext context) : base(context)
+    public EfProductRepository(ConfugurationDbContext context) : base(context)
     {
     }
 }
